@@ -111,7 +111,9 @@ public class RmiServer extends AbstractHost //extends java.rmi.server.UnicastRem
         try {
             Match m = new Match(type, bottomTeam);
             match.setData(type, m.getWhiteTeam(), m.getBlackTeam(), m.getWhiteTeam());
-            client.setTable(TableDto.toDtoTable(match));
+            if (client != null) { 
+                client.setTable(TableDto.toDtoTable(match));
+            }
         } catch (RemoteException ex) {
             Logger.getLogger(RmiServer.class.getName()).log(Level.SEVERE, "Remote Exception", ex);
         }

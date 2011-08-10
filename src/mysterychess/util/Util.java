@@ -45,7 +45,7 @@ import mysterychess.model.Team;
  */
 public class Util {
 
-    private final static String VERSION = "2.0";
+    private final static String VERSION = "2.1";
     public final static String APPLICATION_NAME = "MysteryChess";
     public final static String RMI_SERVER_NAME = "MysteryChessServer";
     public static long PIECE_MOVE_EXPIRE_TIME = 2 * 60 * 1000; // 2 minutes
@@ -141,7 +141,7 @@ public class Util {
                 try {
                     // TODO write some log
                     Logger.getLogger(Util.class.getName()).info("Executing task "
-                            + task.toString());
+                            + task.getDescription());
                     task.perform();
                 } catch (Exception ex) {
                     Logger.getLogger(Util.class.getName()).log(Level.SEVERE, null, ex);
@@ -498,14 +498,19 @@ public class Util {
         return loadImage(fileName);
     }
 
+//    /** Returns an ImageIcon, or null if the path was invalid. */
+//    public static ImageIcon createImageIcon(String path, String description) {
+//        java.net.URL imgURL = Util.class.getResource(path);
+//        if (imgURL != null) {
+//            return new ImageIcon(imgURL, description);
+//        } else {
+//            System.err.println("Couldn't find file: " + path);
+//            return null;
+//        }
+//    }
+    
     /** Returns an ImageIcon, or null if the path was invalid. */
     public static ImageIcon createImageIcon(String path, String description) {
-        java.net.URL imgURL = Util.class.getResource(path);
-        if (imgURL != null) {
-            return new ImageIcon(imgURL, description);
-        } else {
-            System.err.println("Couldn't find file: " + path);
-            return null;
-        }
+        return new ImageIcon(loadImage(path), description);
     }
 }

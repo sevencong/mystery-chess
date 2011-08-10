@@ -11,4 +11,6 @@ package mysterychess.util;
  */
 public interface Task {
     public void perform() throws Exception;
+
+    public String getDescription();
 }

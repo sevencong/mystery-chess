@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -262,8 +263,10 @@ public class ChatPanel extends JPanel {
         }
 
         private JButton createButton(final int gifId) {
-            JButton b = new JButton(Util.createImageIcon("anim/" + gifId + ".gif", ""));
-            b.setMaximumSize(new Dimension(40, 40));
+//            JButton b = new JButton(Util.createImageIcon("anim/" + gifId + ".gif", ""));
+            JButton b = new JButton(new ImageIcon(Util.loadImage("anim/" + gifId + ".gif")
+                    .getScaledInstance(30, 30, Image.SCALE_DEFAULT)));
+            b.setMaximumSize(new Dimension(30, 30));
             b.setBackground(Color.white);
             b.addMouseListener(new MouseAdapter() {
                 @Override

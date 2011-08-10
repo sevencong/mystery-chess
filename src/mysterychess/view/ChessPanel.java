@@ -227,7 +227,6 @@ public class ChessPanel extends JPanel {
         private boolean pieceMoveTimeWarned = false;
         private JLabel pieceMoveTimeWarnLabel = new JLabel(
                 new ImageIcon(Util.loadImage("alarm.gif").getScaledInstance(30, 30, Image.SCALE_DEFAULT)));
-//        private boolean gameTimeWarned = false;
         private JLabel gameTimeWarnLabel = new JLabel(
                 new ImageIcon(Util.loadImage("monkey.gif").getScaledInstance(30, 30, Image.SCALE_DEFAULT)));
 
