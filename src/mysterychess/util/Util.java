@@ -45,7 +45,7 @@ import mysterychess.model.Team;
  */
 public class Util {
 
-    private final static String VERSION = "2.1";
+    private final static String VERSION = "2.2";
     public final static String APPLICATION_NAME = "MysteryChess";
     public final static String RMI_SERVER_NAME = "MysteryChessServer";
     public static long PIECE_MOVE_EXPIRE_TIME = 2 * 60 * 1000; // 2 minutes
@@ -70,8 +70,8 @@ public class Util {
     public static final Point BLACK_SOLDIER3_DEFAULT_POSITION = new Point(4, 3);
     public static final Point BLACK_SOLDIER4_DEFAULT_POSITION = new Point(6, 3);
     public static final Point BLACK_SOLDIER5_DEFAULT_POSITION = new Point(8, 3);
-    private static final String[] DEVELOPERS = {"Tin Bui Huy", "The Tran Quang", 
-        "Huy Khong Minh", "Linh Do Tran"};
+    private static final String[] DEVELOPERS = {"Tin Bui Huy", "Huy Khong Minh", "The Tran Quang" 
+        };
 
     // Init log
     static {
@@ -497,17 +497,6 @@ public class Util {
         }
         return loadImage(fileName);
     }
-
-//    /** Returns an ImageIcon, or null if the path was invalid. */
-//    public static ImageIcon createImageIcon(String path, String description) {
-//        java.net.URL imgURL = Util.class.getResource(path);
-//        if (imgURL != null) {
-//            return new ImageIcon(imgURL, description);
-//        } else {
-//            System.err.println("Couldn't find file: " + path);
-//            return null;
-//        }
-//    }
     
     /** Returns an ImageIcon, or null if the path was invalid. */
     public static ImageIcon createImageIcon(String path, String description) {

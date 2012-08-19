@@ -65,7 +65,7 @@ public class MainFrame extends javax.swing.JFrame {
                 Thread.sleep(200);
             } catch (InterruptedException ex) {
                 Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE,
-                        null, ex);
+                        "Sleep interrupted", ex);
             }
             System.exit(0);
         } else {

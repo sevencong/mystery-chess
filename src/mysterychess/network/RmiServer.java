@@ -170,10 +170,10 @@ public class RmiServer extends AbstractHost //extends java.rmi.server.UnicastRem
         return client;
     }
     
-    @Override
-    public void removeOtherSide() {
-        client = null;
-    }
+//    @Override
+//    public void removeOtherSide() {
+//        client = null;
+//    }
 
     /**
      * No transform needed for Server side,

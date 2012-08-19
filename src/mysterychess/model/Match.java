@@ -300,10 +300,11 @@ public class Match {
         for (ModelActionListener l : modelActionListeners) {
             l.pieceMoved(oldPos, newPos);
         }
+        
     }
 
     /**
-     * This event will be thrown in either cases:
+     * This event will be fired in either cases:
      * 1. When the game created. In this case source will be this match.
      * 2. When a piece moved.
      *

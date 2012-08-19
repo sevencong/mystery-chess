@@ -33,7 +33,7 @@ public abstract class AbstractHost implements CommonRemote {
     }
 
     protected abstract CommonRemote getOtherSide();
-    protected abstract void removeOtherSide();
+//    protected abstract void removeOtherSide();
 
     protected abstract void createNewGame(ChessType type, TeamColor bottomTeam);
 
@@ -235,7 +235,7 @@ public abstract class AbstractHost implements CommonRemote {
      */
     public void resigned() throws RemoteException {
         match.resign(false);
-        removeOtherSide();
+//        removeOtherSide();
     }
     
      /**

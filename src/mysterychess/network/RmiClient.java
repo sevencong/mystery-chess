@@ -209,10 +209,10 @@ public class RmiClient extends AbstractHost implements ClientCallback {
         return server;
     }
     
-    @Override
-    public void removeOtherSide() {
-        server = null;
-    }
+//    @Override
+//    public void removeOtherSide() {
+//        server = null;
+//    }
 
     @Override
     protected Point transform(Point p) {

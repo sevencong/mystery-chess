@@ -3,7 +3,6 @@ package mysterychess.model;
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.List;
-
 import mysterychess.model.Team.TeamColor;
 
 /**

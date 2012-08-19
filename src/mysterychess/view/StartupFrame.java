@@ -1,17 +1,36 @@
 package mysterychess.view;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.border.TitledBorder;
-import javax.swing.*;
-import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import mysterychess.model.ChessType;
 import mysterychess.model.Match;
 import mysterychess.model.Team.TeamColor;
@@ -38,7 +57,7 @@ public class StartupFrame extends JFrame {
     JLabel portLabel = new JLabel();
     JTextField portText = new JTextField();
     JLabel addressLabel = new JLabel();
-    JTextField addressText = new JTextField();
+    JComboBox addressCombo = new JComboBox();
     JCheckBox iMoveFirstCheck = new JCheckBox();
     JPanel northPanel = new JPanel() {
 
@@ -79,6 +98,7 @@ public class StartupFrame extends JFrame {
     JLabel jLabel2 = new JLabel();
     GridBagLayout gridBagLayout1 = new GridBagLayout();
     JPanel paddingPanel = new JPanel();
+    private boolean started = false;
 
     public StartupFrame() {
         try {
@@ -104,7 +124,7 @@ public class StartupFrame extends JFrame {
         clientRadio.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                addressText.setVisible(true);
+                addressCombo.setVisible(true);
                 addressLabel.setVisible(true);
                 iMoveFirstCheck.setVisible(false);
 
@@ -126,7 +146,7 @@ public class StartupFrame extends JFrame {
         serverRadio.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                addressText.setVisible(false);
+                addressCombo.setVisible(false);
                 addressLabel.setVisible(false);
                 iMoveFirstCheck.setVisible(true);
 
@@ -149,8 +169,15 @@ public class StartupFrame extends JFrame {
         addressLabel.setHorizontalAlignment(SwingConstants.TRAILING);
         addressLabel.setText("Server address:");
         addressLabel.setVisible(false);
-        addressText.setVisible(false);
-        addressText.setText(loader.getParameter("server", "192.168.103.191"));
+        addressCombo.setVisible(false);
+        String str = loader.getParameter("server", "192.168.103.191");
+        String[] addrs = str.split(";");
+        for (String a : addrs) {
+            addressCombo.addItem(a);
+        }
+        addressCombo.setEditable(true);
+        addressCombo.setSelectedItem(addrs[0]);
+        
         iMoveFirstCheck.setHorizontalAlignment(SwingConstants.TRAILING);
         iMoveFirstCheck.setSelected(true);
         iMoveFirstCheck.setText("I move first");
@@ -185,7 +212,7 @@ public class StartupFrame extends JFrame {
                 new Insets(6, 19, 0, 13), 53, 0));
         mainPanel.add(portText, new GridBagConstraints(1, 1, 5, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
                 new Insets(9, 0, 0, 0), 242, 6));
-        mainPanel.add(addressText, new GridBagConstraints(1, 2, 5, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
+        mainPanel.add(addressCombo, new GridBagConstraints(1, 2, 5, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL,
                 new Insets(8, 0, 0, 0), 242, 6));
         mainPanel.add(pieceMoveLimitTimeText,
                 new GridBagConstraints(5, 4, 1, 1, 1.0, 0.0, GridBagConstraints.WEST,
@@ -226,7 +253,10 @@ public class StartupFrame extends JFrame {
 
             public void actionPerformed(ActionEvent e) {
                 try {
-                    loader.setParameter("server", addressText.getText());
+                    String addrs = loader.getParameter("server", 
+                            addressCombo.getSelectedItem().toString());
+                    addrs = updateAddrs(addrs, addressCombo.getSelectedItem().toString());
+                    loader.setParameter("server", addrs);
                     loader.setParameter("port", portText.getText());
                     loader.store();
                 } catch (IOException ex) {
@@ -235,11 +265,32 @@ public class StartupFrame extends JFrame {
                 }
                 startup();
             }
+            
+            private String updateAddrs(String currentAddresses, String newAddress) {
+                final int MAX_ENTRY = 7;
+                String[] s = currentAddresses.split(";");
+                List<String> addrs = new ArrayList<String>();
+                addrs.addAll(Arrays.asList(s));
+                if (addrs.contains(newAddress)) {
+                    addrs.remove(newAddress);
+                }
+                if (addrs.size() >= MAX_ENTRY) {
+                    addrs.remove(addrs.size() - 1);
+                }
+                addrs.add(0, newAddress);
+                StringBuilder st = new StringBuilder();
+                for (String a : addrs) {
+                    st.append(a);
+                    st.append(";");
+                }
+                st.delete(st.length() - 1, st.length());
+                return st.toString();
+            }
         };
-        portText.addActionListener(enteredActionListener);
-        pieceMoveLimitTimeText.addActionListener(enteredActionListener);
-        gameLimitTimeText.addActionListener(enteredActionListener);
-        addressText.addActionListener(enteredActionListener);
+//        portText.addActionListener(enteredActionListener);
+//        pieceMoveLimitTimeText.addActionListener(enteredActionListener);
+//        gameLimitTimeText.addActionListener(enteredActionListener);
+//        addressCombo.addActionListener(enteredActionListener);
         okButton.addActionListener(enteredActionListener);
     }
 
@@ -254,6 +305,9 @@ public class StartupFrame extends JFrame {
     }
 
     private void startup() {
+        if (started) {
+            return;
+        }
         try {
             final Match match;
             final Chatter chater = new Chatter();
@@ -288,7 +342,7 @@ public class StartupFrame extends JFrame {
                 s.startup();
             } else {
                 title = "Mystery Chess Client - " + Util.getVersion();
-                String serverAddress = addressText.getText();
+                String serverAddress = addressCombo.getSelectedItem().toString();
                 RmiClient client = new RmiClient(serverAddress, port, chater);
                 match = client.startup();
             }
@@ -297,6 +351,7 @@ public class StartupFrame extends JFrame {
                 java.awt.EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
+                        started = true;
                         new MainFrame(match, chater, title).setVisible(true);
                     }
                 });

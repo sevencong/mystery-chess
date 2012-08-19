@@ -73,8 +73,8 @@ public class AboutDialog extends JDialog {
         contributorsText.setBorder(BorderFactory.createEtchedBorder());
         contributorsText.setEditable(false);
         jPanel2.setLayout(borderLayout5);
-        linkToProject.setText("Get latest version or source code!");
-        linkToProject.setLinkURL(new URL("http://code.google.com/p/mystery-chess/"));
+        linkToProject.setText("Get latest version!");
+        linkToProject.setLinkURL(new URL("http://code.google.com/p/mystery-chess/downloads/list"));
         jPanel2.setPreferredSize(new Dimension(38, 55));
         nothPanel.setLayout(borderLayout2);
         nothPanel.setPreferredSize(new Dimension(74, 30));

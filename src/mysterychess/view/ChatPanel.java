@@ -12,10 +12,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -40,6 +43,7 @@ public class ChatPanel extends JPanel {
     /**
      * 
      */
+	private final static String ANIMATION_QUOTE_STRING = "\\";
     private final static Color CHAT_HIGHLIGHT_COLOR = new Color(0x4054cc80,
             true);
     private final static Color CHAT_BACKGROUND_COLOR = new Color(0xffffff);
@@ -76,14 +80,14 @@ public class ChatPanel extends JPanel {
         inputPanel.add(tipButton, BorderLayout.EAST);
 
         JPanel outputPanel = new JPanel();
-        outputPanel.setLayout(new BoxLayout(outputPanel, BoxLayout.Y_AXIS));
+		outputPanel.setLayout(new BorderLayout());
         outputPanel.setAlignmentY(CENTER_ALIGNMENT);
         outputPanel.setSize(new Dimension(100, 100));
         JScrollPane areaScrollPane = new JScrollPane(outputPane);
         areaScrollPane
                 .setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        outputPanel.add(areaScrollPane);
-        outputPanel.add(tipPanel);
+		outputPanel.add(areaScrollPane, BorderLayout.CENTER);
+		outputPanel.add(tipPanel, BorderLayout.SOUTH);
 
         add(outputPanel, BorderLayout.CENTER);
         add(inputPanel, BorderLayout.SOUTH);
@@ -111,7 +115,7 @@ public class ChatPanel extends JPanel {
         }
     }
 
-    private void appendAnimationGif(int gifCode) {
+	private void appendAnimationGif(String gifCode) {
         StyledDocument doc = outputPane.getStyledDocument();
         try {
             setAnimationGif(doc, "anim/" + gifCode + ".gif");
@@ -122,23 +126,57 @@ public class ChatPanel extends JPanel {
         }
     }
 
+	/**
+	 * Returns a list of keys sorted by length.
+	 */
+	private List<String> getSortedAnimationKeys() {
+		ArrayList<String> result = new ArrayList<String>();
+		for (String key : animationMap.keySet()) {
+			int pos = result.size();
+			for (int i = 0; i < result.size(); i++) {
+				if (result.get(i).length() < key.length()) {
+					pos = i;
+					break;
+				}
+			}
+			result.add(pos, key);
+			System.out.println("Keys: " + result);
+		}
+		return result;
+	}
+
     private String processInput(String input) {
-        input = input.replace(":))", ":2:");
-        input = input.replace(":((", ":1:");
-        input = input.replace(":]", ":11:");
-        input = input.replace(":\")", ":5:");
-        input = input.replace(">\"<", ":9:");
-        input = input.replace(";))", ":14:");
-        input = input.replace(":)", ":20:");
+
+		for (String key : getSortedAnimationKeys()) {
+			input = input.replace(key, ANIMATION_QUOTE_STRING + animationMap.get(key) + ANIMATION_QUOTE_STRING);
+		}
+
         return input;
     }
+
+	private final static Map<String, String> animationMap = new HashMap<String, String>();
+
+	static {
+
+		animationMap.put(":))", "big_laugh");
+		animationMap.put(":D", "big_laugh");
+		animationMap.put(":((", "cry");
+		animationMap.put(">\"<", "thinking");
+		animationMap.put(";))", "tongue");
+		animationMap.put(":}", "angry");
+		animationMap.put(":(", "sad");
+		animationMap.put(";)", "happy");
+		animationMap.put(":]", "frown");
+		animationMap.put(":)", "smile");
+		animationMap.put(":z)", "sleeping");
+	}
 
     private void updateTextPane(String input) {
         input = processInput(input);
 
         int j = -1;
         do {
-            j = input.indexOf(":");
+			j = input.indexOf(ANIMATION_QUOTE_STRING);
             if (j == -1) {
                 appendString(input, REGULAR);
             } else {
@@ -146,19 +184,13 @@ public class ChatPanel extends JPanel {
                     String plainText = input.substring(0, j);
                     appendString(plainText, REGULAR);
                 }
-                // extract animation code
+				// Extract animation code
                 int k = -1;
                 if (j + 1 < input.length()) {
-                    k = input.indexOf(":", j + 1);
+					k = input.indexOf(ANIMATION_QUOTE_STRING, j + 1);
                     if (k != -1) {
                         String code = input.substring(j + 1, k);
-                        int gifCode = 20;
-                        try {
-                            gifCode = Integer.parseInt(code);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        appendAnimationGif(gifCode);
+						appendAnimationGif(code);
                     }
                 }
                 if (k == -1) {
@@ -196,14 +228,20 @@ public class ChatPanel extends JPanel {
                 updateTextPane(msg);
                 showMessageReceivedIcon();
             }
+			boolean messageReceivedIconShown = false;
+			private synchronized void showMessageReceivedIcon() {
+				if (messageReceivedIconShown) {
+					return;
+				}
 
-            private void showMessageReceivedIcon() {
+				messageReceivedIconShown = true;
                 Thread t = new Thread() {
                     public void run() {
                         try {
                             outputPane.setBackground(CHAT_HIGHLIGHT_COLOR);
-                            sleep(300);
+							sleep(70);
                             outputPane.setBackground(CHAT_BACKGROUND_COLOR);
+							messageReceivedIconShown = false;
                         } catch (InterruptedException ex) {
                         }
                     }
@@ -246,12 +284,16 @@ public class ChatPanel extends JPanel {
          */
         private static final long serialVersionUID = 1L;
 
-        public TipPanel() {
-            setLayout(new GridLayout(0, 3));
+		// private static final int IMAGE_COUNT = 20;
+		// private static final int IMAGE_SIZE = 30;
 
-            for (int i = 1; i <= 20; i++) {
-                add(createButton(i));
+        public TipPanel() {
+			setLayout(new GridLayout(5, 0, 0, 0));
+
+			for (String name : animationMap.keySet()) {
+				add(createButton(name));
             }
+			setAutoscrolls(true);
             setVisible(false);
         }
 
@@ -262,19 +304,20 @@ public class ChatPanel extends JPanel {
             }
         }
 
-        private JButton createButton(final int gifId) {
-//            JButton b = new JButton(Util.createImageIcon("anim/" + gifId + ".gif", ""));
-            JButton b = new JButton(new ImageIcon(Util.loadImage("anim/" + gifId + ".gif")
-                    .getScaledInstance(30, 30, Image.SCALE_DEFAULT)));
-            b.setMaximumSize(new Dimension(30, 30));
+		private JButton createButton(final String emotionKey) {
+			JButton b = new JButton(new ImageIcon(Util.loadImage(
+					"anim/" + animationMap.get(emotionKey) + ".gif")
+					.getScaledInstance(28, 28, Image.SCALE_DEFAULT)));
+			b.setPreferredSize(new Dimension(36, 36));
             b.setBackground(Color.white);
             b.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    String textToInsert = ":" + gifId + ":";
+					String textToInsert = emotionKey;
                     int p = inputText.getCaretPosition();
                     String text = inputText.getText();
-                    String newText = text.substring(0, p) + textToInsert + text.substring(p, text.length());
+					String newText = text.substring(0, p) + textToInsert
+							+ text.substring(p, text.length());
                     inputText.setText(newText);
                     super.mouseClicked(e);
                 }
