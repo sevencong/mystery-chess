@@ -98,7 +98,6 @@ public class StartupFrame extends JFrame {
     JLabel jLabel2 = new JLabel();
     GridBagLayout gridBagLayout1 = new GridBagLayout();
     JPanel paddingPanel = new JPanel();
-    private boolean started = false;
 
     public StartupFrame() {
         try {
@@ -305,9 +304,6 @@ public class StartupFrame extends JFrame {
     }
 
     private void startup() {
-        if (started) {
-            return;
-        }
         try {
             final Match match;
             final Chatter chater = new Chatter();
@@ -351,7 +347,6 @@ public class StartupFrame extends JFrame {
                 java.awt.EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
-                        started = true;
                         new MainFrame(match, chater, title).setVisible(true);
                     }
                 });

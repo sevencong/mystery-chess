@@ -288,7 +288,8 @@ public class Match {
     public void removeGameSavedListener(ActionListener pieceMovedListener) {
         gameSavedListeners.remove(pieceMovedListener);
     }
-
+    
+    GameTracker gameTracker = new GameTracker();
     protected void pieceMoved(Point oldPos, Point newPos) {
 
         Line2D line = new Line2D.Float(oldPos, newPos);
@@ -300,7 +301,6 @@ public class Match {
         for (ModelActionListener l : modelActionListeners) {
             l.pieceMoved(oldPos, newPos);
         }
-        
     }
 
     /**
@@ -311,6 +311,16 @@ public class Match {
      * @param p the piece has just moved causing this event
      */
     protected void dataChanged(Piece p) {
+        if(p == null) {
+            gameTracker = new GameTracker();
+        } else {
+            GameTracker.MatchState s;
+            
+            // TODO change data model to support storing move line
+            s = new GameTracker.MatchState(TableDto.toDtoTable(this), p.getPosition(), p.getPosition());
+            gameTracker.addState(s);
+        }
+        
         // When a piece move p != null
         Object source = this;
         if (p != null) {

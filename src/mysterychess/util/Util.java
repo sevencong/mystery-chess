@@ -38,6 +38,7 @@ import mysterychess.model.Soldier;
 import mysterychess.model.SuperAdvisor;
 import mysterychess.model.SuperElephant;
 import mysterychess.model.Team;
+import mysterychess.network.dto.PieceDto;
 
 /**
  *
@@ -45,9 +46,11 @@ import mysterychess.model.Team;
  */
 public class Util {
 
-    private final static String VERSION = "2.2";
+    private final static String VERSION = "3.0-beta";
     public final static String APPLICATION_NAME = "MysteryChess";
     public final static String RMI_SERVER_NAME = "MysteryChessServer";
+    public final static String DEFAULT_BASE_DIRECTORY = System.getProperty("user.dir");
+
     public static long PIECE_MOVE_EXPIRE_TIME = 2 * 60 * 1000; // 2 minutes
     public static long GAME_EXPIRE_TIME = 20 * 60 * 1000; // 20 minutes
     private final static Map<String, Image> images = new HashMap<String, Image>();
@@ -469,6 +472,20 @@ public class Util {
         String pieceName = p.getCurrentRole().getName().name().toLowerCase();
         String fileName = "";
         if (!p.isTurnedUp()) {
+            fileName = "mystery-" + teamName + "-" + pieceName + ".png";
+        } else {
+            fileName = teamName + "-" + pieceName + ".png";
+        }
+        return loadImage(fileName);
+    }
+    
+    // TODO this method should not be here since it relates to Dto
+    public static Image getImage(PieceDto p, Team.TeamColor color) {
+        // TODO get filename
+        String teamName = color.name().toLowerCase();
+        String pieceName = p.currentType.name().toLowerCase();
+        String fileName = "";
+        if (!p.turnUped) {
             fileName = "mystery-" + teamName + "-" + pieceName + ".png";
         } else {
             fileName = teamName + "-" + pieceName + ".png";

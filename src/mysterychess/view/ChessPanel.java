@@ -8,6 +8,11 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -19,6 +24,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 import mysterychess.model.ChessTimer;
+import mysterychess.model.GameTracker;
 import mysterychess.model.Match;
 import mysterychess.model.Piece;
 import mysterychess.model.RemoteActionListener;
@@ -97,14 +103,14 @@ public class ChessPanel extends JPanel {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
         JButton newGameButton = new JButton("New");
-        JButton saveButton = new JButton("Save");
-        JButton loadButton = new JButton("Load");
+//        JButton saveButton = new JButton("Save");
+        JButton replayButton = new JButton("Playback");
         JButton aboutButton = new JButton("About");
-        saveButton.setEnabled(false);
-        loadButton.setEnabled(false);
+//        saveButton.setEnabled(false);
+//        replayButton.setEnabled(true);
         buttonPanel.add(newGameButton);
-        buttonPanel.add(saveButton);
-        buttonPanel.add(loadButton);
+//        buttonPanel.add(saveButton);
+        buttonPanel.add(replayButton);
         buttonPanel.add(aboutButton);
         buttonPanel.setSize(150, HORIZONTAL_PANEL_HEIGHT);
         newGameButton.addActionListener(new ActionListener() {
@@ -124,17 +130,17 @@ public class ChessPanel extends JPanel {
             }
         });
 
-        saveButton.addActionListener(new ActionListener() {
+//        saveButton.addActionListener(new ActionListener() {
+//
+//            public void actionPerformed(ActionEvent e) {
+//                saveGame();
+//            }
+//        });
+
+        replayButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                saveGame();
-            }
-        });
-
-        loadButton.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                loadGame();
+                replayGame();
             }
         });
 
@@ -161,6 +167,35 @@ public class ChessPanel extends JPanel {
         String fileName = selectFile(true);
         match.loadGame(fileName);
     }
+    
+    private void replayGame() {
+        
+        FileInputStream fi = null;
+        try {
+            String fileName = selectFile(true);
+            if (fileName == null) {
+                return;
+            }
+            fi = new FileInputStream(fileName);
+            ObjectInputStream oi = new ObjectInputStream(fi);
+            List<GameTracker.MatchState> states = (List<GameTracker.MatchState>) oi.readObject();
+            ReplayDialog d = new ReplayDialog(states);
+            d.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Fail to load file. File may not in correct format", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            Logger.getLogger(ChessPanel.class.getName()).log(Level.SEVERE, ex.toString(), ex);
+        } finally {
+            try {
+                if (fi != null) {
+                    fi.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(ChessPanel.class.getName()).log(Level.SEVERE, ex.toString(), ex);
+            }
+        }
+    }
+
 
     private void showAbout() {
         if (aboutFrame == null) {
@@ -172,7 +207,7 @@ public class ChessPanel extends JPanel {
 
     private String selectFile(boolean open) {
         try {
-            JFileChooser fc = new JFileChooser();
+            JFileChooser fc = new JFileChooser(Util.DEFAULT_BASE_DIRECTORY);
             fc.setFileFilter(new FileFilter() {
 
                 @Override

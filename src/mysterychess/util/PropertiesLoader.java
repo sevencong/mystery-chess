@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 public class PropertiesLoader {
 
     /** Location where our configuration file will be stored */
-    private static final String DEFAULT_BASE_DIRECTORY = System.getProperty("user.dir");
     private File propsFile = null;
     private Properties parameters = null;
 
@@ -33,7 +32,7 @@ public class PropertiesLoader {
     }
 
     public PropertiesLoader(String propertiesFileName) throws FileNotFoundException, IOException {
-        this(DEFAULT_BASE_DIRECTORY, propertiesFileName);
+        this(Util.DEFAULT_BASE_DIRECTORY, propertiesFileName);
     }
 
     /**
