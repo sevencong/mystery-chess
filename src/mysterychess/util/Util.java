@@ -485,7 +485,7 @@ public class Util {
         String teamName = color.name().toLowerCase();
         String pieceName = p.currentType.name().toLowerCase();
         String fileName = "";
-        if (!p.turnUped) {
+        if (!p.turnedUp) {
             fileName = "mystery-" + teamName + "-" + pieceName + ".png";
         } else {
             fileName = teamName + "-" + pieceName + ".png";
@@ -507,6 +507,28 @@ public class Util {
         } else {
             pieceName = p.getCurrentRole().getName().name().toLowerCase();
             if (!p.isTurnedUp()) {
+                fileName = teamName + "-unknown" + ".png";
+            } else {
+                fileName = teamName + "-" + pieceName + ".png";
+            }
+        }
+        return loadImage(fileName);
+    }
+    
+    public static Image getRetiredImage(PieceDto p, boolean captured, Team.TeamColor color) {
+        String teamName = color.name().toLowerCase();
+        String pieceName = "";
+        String fileName = "";
+        if (captured) {
+            pieceName = p.actualType.name().toLowerCase();
+            if (!p.turnedUp) {
+                fileName = "mystery-" + teamName + "-" + pieceName + ".png";
+            } else {
+                fileName = teamName + "-" + pieceName + ".png";
+            }
+        } else {
+            pieceName = p.currentType.name().toLowerCase();
+            if (!p.turnedUp) {
                 fileName = teamName + "-unknown" + ".png";
             } else {
                 fileName = teamName + "-" + pieceName + ".png";

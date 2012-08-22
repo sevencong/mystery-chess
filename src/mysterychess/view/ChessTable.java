@@ -307,7 +307,10 @@ public class ChessTable extends JPanel {
             }
         }
         if (selectedPiece != null) {
-            drawPiece(g, selectedPiece, getMousePosition(), size);
+            Point p = getMousePosition();
+            if (p != null) {
+                drawPiece(g, selectedPiece, p, size);
+            }
         }
     }
 
@@ -317,6 +320,10 @@ public class ChessTable extends JPanel {
     }
 
     private void drawPiece(Graphics g, Piece piece, Point p, int size) {
+        if (p == null) {
+            return;
+        }
+        
         try {
             g.drawImage(Util.getImage(piece),
                     p.x - size / 2,

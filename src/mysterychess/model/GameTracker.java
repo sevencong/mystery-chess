@@ -69,11 +69,26 @@ public class GameTracker {
     public static class MatchState  implements Serializable {
         private static final long serialVersionUID = 1;
         private TableDto table;
+        private PieceDto[] capturedPieces;
+        private PieceDto[] lostPieces;
+
+        public PieceDto[] getCapturedPieces() {
+            return capturedPieces;
+        }
+
+        public PieceDto[] getLostPieces() {
+            return lostPieces;
+        }
         private Point lastMoveTo;
         private Point lastMoveFrom;
 
-        public MatchState(TableDto table, Point lastMoveFrom, Point lastMoveTo) {
+        public MatchState(TableDto table, 
+                PieceDto[] capturedPieces,
+                PieceDto[] lostPieces, 
+                Point lastMoveFrom, Point lastMoveTo) {
             this.table = table;
+            this.capturedPieces = capturedPieces;
+            this.lostPieces = lostPieces;
             this.lastMoveFrom = lastMoveFrom;
             this.lastMoveTo = lastMoveTo;
         }

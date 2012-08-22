@@ -89,7 +89,7 @@ public class RmiClient extends AbstractHost implements ClientCallback {
                     Util.transform(p.pos),
                     createRole(p.currentType, false),
                     createRole(p.actualType, mystery),
-                    p.turnUped);
+                    p.turnedUp);
             pieces.add(p1);
         }
         team.setPieces(pieces);

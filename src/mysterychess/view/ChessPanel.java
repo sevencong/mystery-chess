@@ -179,7 +179,8 @@ public class ChessPanel extends JPanel {
             fi = new FileInputStream(fileName);
             ObjectInputStream oi = new ObjectInputStream(fi);
             List<GameTracker.MatchState> states = (List<GameTracker.MatchState>) oi.readObject();
-            ReplayDialog d = new ReplayDialog(states);
+            ReplayDialog d = new ReplayDialog(JOptionPane.getFrameForComponent(this), states);
+            d.setLocationRelativeTo(this);
             d.setVisible(true);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Fail to load file. File may not in correct format", 

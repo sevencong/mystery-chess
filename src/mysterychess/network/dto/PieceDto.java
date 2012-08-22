@@ -23,7 +23,7 @@ public class PieceDto implements Serializable {
      */
     private static final long serialVersionUID = 1;
     public Point pos;
-    public boolean turnUped = false;
+    public boolean turnedUp = false;
     public PieceName currentType;
     public PieceName actualType;
 
@@ -31,7 +31,7 @@ public class PieceDto implements Serializable {
         PieceDto p = new PieceDto();
         p.actualType = piece.getActualRole().getName();
         p.currentType = piece.getCurrentRole().getName();
-        p.turnUped = piece.isTurnedUp();
+        p.turnedUp = piece.isTurnedUp();
         p.pos = piece.getPosition();
         return p;
     }

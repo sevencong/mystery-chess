@@ -1,18 +1,16 @@
 package mysterychess.view;
 
 import java.awt.*;
-import javax.swing.*;
-import javax.swing.BorderFactory;
-import java.awt.Dimension;
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import mysterychess.model.GameTracker;
 import mysterychess.model.GameTracker.MatchState;
+import mysterychess.model.Piece;
 import mysterychess.model.Team.TeamColor;
 import mysterychess.network.dto.PieceDto;
 import mysterychess.util.Util;
@@ -51,32 +49,32 @@ public class ReplayDialog
     final static int DEFAULT_DELAY = 1000 * 15; // milli seconds
     PlayThread player;
 
-    public ReplayDialog(Frame owner, String title, boolean modal) {
+    private ReplayDialog(Frame owner, String title, boolean modal) {
         super(owner, title, modal);
         try {
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            jbInit();
+            initiate();
             // pack();
         } catch (Exception exception) {
             exception.printStackTrace();
         }
     }
 
-    public ReplayDialog(java.util.List<GameTracker.MatchState> states) {
-        this(JOptionPane.getRootFrame(), "Playback", true);
+    public ReplayDialog(Frame parent, java.util.List<GameTracker.MatchState> states) {
+        this(parent, "Playback", false);
         this.states = states;
         setProgressBoundaries();
         play();
     }
 
-    private void jbInit() throws Exception {
-        setSize(600, 600);
+    private void initiate() throws Exception {
+        setSize(550, 600);
         this.getContentPane().setLayout(borderLayout4);
         replayPanel.setLayout(null);
         jPanel2.setLayout(borderLayout3);
         playButton.setBorder(BorderFactory.createRaisedBevelBorder());
-        playButton.setMinimumSize(new Dimension(30, 21));
-        playButton.setPreferredSize(new Dimension(30, 21));
+        playButton.setMinimumSize(new Dimension(40, 21));
+        playButton.setPreferredSize(new Dimension(40, 21));
         playButton.setIcon(null);
         playButton.setText(">");
         progressSlider.setBorder(BorderFactory.createEtchedBorder());
@@ -85,7 +83,7 @@ public class ReplayDialog
         jLabel1.setText("    Speed:");
         speedSlider.setBorder(BorderFactory.createEtchedBorder());
         speedSlider.setPreferredSize(new Dimension(160, 8));
-        stepLabel.setBorder(BorderFactory.createLoweredBevelBorder());
+        stepLabel.setBorder(BorderFactory.createEtchedBorder());
         stepLabel.setMaximumSize(new Dimension(100, 4));
         stepLabel.setMinimumSize(new Dimension(40, 4));
         stepLabel.setPreferredSize(new Dimension(60, 4));
@@ -123,6 +121,7 @@ public class ReplayDialog
         progressSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
+                changeCurrentState(progressSlider.getValue());
                 showState(progressSlider.getValue());
             }
         });
@@ -139,11 +138,15 @@ public class ReplayDialog
         });
     }
 
+    synchronized private void changeCurrentState(int newStateIndex) {
+        currentStateIndex = newStateIndex;
+    }
+
     private void play() {
         playButton.setText("||");
         playing = true;
         if (currentStateIndex == states.size()) {
-            currentStateIndex = 0;
+            changeCurrentState(0);
         }
         player = new PlayThread();
         player.start();
@@ -166,10 +169,10 @@ public class ReplayDialog
         replayPanel.setState(states.get(0));
     }
 
-    private void showState(int currentStateIndex) {
-        replayPanel.setState(states.get(currentStateIndex));
-        progressSlider.setValue(currentStateIndex);
-        stepLabel.setText((currentStateIndex + 1) + "/" + states.size());
+    synchronized private void showState(int stateIndex) {
+        replayPanel.setState(states.get(stateIndex));
+        progressSlider.setValue(stateIndex);
+        stepLabel.setText((stateIndex + 1) + "/" + states.size());
     }
 
     class PlayThread extends Thread {
@@ -179,7 +182,7 @@ public class ReplayDialog
         @Override
         public void run() {
             if (currentStateIndex == -1) {
-                currentStateIndex = 0;
+                changeCurrentState(0);
             }
 
             STOP:
@@ -187,7 +190,7 @@ public class ReplayDialog
 
                 showState(currentStateIndex);
 
-                currentStateIndex++;
+                changeCurrentState(currentStateIndex + 1);
 
                 int totalSleepTime = DEFAULT_DELAY / speed;
                 int sleptTime = 0;
@@ -205,7 +208,7 @@ public class ReplayDialog
             }
             playing = false;
             playButton.setText(">");
-            currentStateIndex = 0;
+//            changeCurrentState(0);
             showState(currentStateIndex);
         }
     }
@@ -238,7 +241,7 @@ public class ReplayDialog
         private void calculateUnit() {
             final int STATIC_MARGIN = 3;
 
-            float unit1 = (getWidth() - 2 * STATIC_MARGIN) / (Util.MAX_X + 1);
+            float unit1 = (getWidth() - 2 * STATIC_MARGIN) / (Util.MAX_X + 1 + 2); // plus 2: captured and lost columns 
             float unit2 = (getHeight() - 2 * STATIC_MARGIN) / (Util.MAX_Y + 1);
             unit = (unit1 < unit2 ? unit1 : unit2);
 
@@ -354,6 +357,10 @@ public class ReplayDialog
             int imageSize = Math.round(unit * PIECE_OVER_CELL_RATIO);
             drawPieces(g, state.getTable().blackTeam, TeamColor.BLACK, imageSize);
             drawPieces(g, state.getTable().whiteTeam, TeamColor.WHITE, imageSize);
+            drawCapturedPieces(g, state.getCapturedPieces(), 
+                    state.getTable().myTeam == TeamColor.WHITE ? TeamColor.BLACK 
+                    : TeamColor.WHITE);
+            drawLostPieces(g, state.getLostPieces(), state.getTable().myTeam);
 
 //        if (match.getCheckPiece() != null) {
 //            drawSquare(g, toScreenCoordinate(
@@ -370,6 +377,55 @@ public class ReplayDialog
 //        }
         }
 
+   protected void drawLostPieces(Graphics g, PieceDto[] pieces, TeamColor color) {
+        int u = (int)(unit/1.55f);
+        int y = yMargin - (int) unit/2 + 4;
+        int xM = Math.round(xMargin - unit - u/2);
+        for (PieceDto piece : pieces) {
+            drawLostPiece(g, piece, color, new Point(xM, y), u);
+            y += u;
+        }
+    }
+
+     private void drawLostPiece(Graphics g, PieceDto piece, TeamColor color, Point p, int unit) {
+        try {
+            int imageSize = unit;
+            g.drawImage(Util.getRetiredImage(piece, false, color),
+                    p.x,
+                    p.y,
+                    imageSize,
+                    imageSize,
+                    null);
+        } catch (Exception e) {
+            Logger.getLogger(this.getClass().getName()).severe(e.getMessage());
+        }
+    }
+     
+      protected void drawCapturedPieces(Graphics g, PieceDto[] pieces, TeamColor color) {
+        int u = (int)(unit/1.55f);
+        int y = getHeight() - yMargin - (int) unit/2 + u/2 - 4;
+        int xM = Math.round(getWidth() - xMargin + u);
+        for (PieceDto piece : pieces) {
+            drawCapturedPiece(g, piece, color, new Point(xM, y), u);
+            y -= u;
+        }
+    }
+
+    private void drawCapturedPiece(Graphics g, PieceDto piece, TeamColor color, Point p, int unit) {
+        try {
+            int imageSize = unit;
+            g.drawImage(Util.getRetiredImage(piece, true, color),
+                    p.x,
+                    p.y,
+                    imageSize,
+                    imageSize,
+                    null);
+        } catch (Exception e) {
+            Logger.getLogger(this.getClass().getName()).severe(e.getMessage());
+        }
+    }
+     ///
+     
         private void drawPieces(Graphics g, PieceDto[] pieces, TeamColor color, int size) {
             for (PieceDto p : pieces) {
                 drawPiece(g, p, color, size);

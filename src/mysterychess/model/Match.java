@@ -48,7 +48,7 @@ public class Match {
     private List<ActionListener> messageListeners = new CopyOnWriteArrayList<ActionListener>();
     private List<ActionListener> gameLoadedListeners = new CopyOnWriteArrayList<ActionListener>();
     private List<ActionListener> gameSavedListeners = new CopyOnWriteArrayList<ActionListener>();
-
+    private GameTracker gameTracker = new GameTracker();    
     public ChessType getType() {
         return type;
     }
@@ -289,7 +289,6 @@ public class Match {
         gameSavedListeners.remove(pieceMovedListener);
     }
     
-    GameTracker gameTracker = new GameTracker();
     protected void pieceMoved(Point oldPos, Point newPos) {
 
         Line2D line = new Line2D.Float(oldPos, newPos);
@@ -311,13 +310,21 @@ public class Match {
      * @param p the piece has just moved causing this event
      */
     protected void dataChanged(Piece p) {
-        if(p == null) {
+        if(p == null) { // New game
             gameTracker = new GameTracker();
-        } else {
+        } else { // Piece moved
             GameTracker.MatchState s;
             
+            Team myTeam = getTeam(TeamPosition.BOTTOM);
+            List<Piece> captured = myTeam.getCapturedPieces();
+            List<Piece> lost = myTeam.getLostPieces();
             // TODO change data model to support storing move line
-            s = new GameTracker.MatchState(TableDto.toDtoTable(this), p.getPosition(), p.getPosition());
+            TableDto t = TableDto.toDtoTable(this);
+            t.myTeam = getTeam(TeamPosition.BOTTOM).getColor();
+            s = new GameTracker.MatchState(t,
+                    TableDto.getDtoTeam(captured),
+                    TableDto.getDtoTeam(lost),
+                    p.getPosition(), p.getPosition());
             gameTracker.addState(s);
         }
         

@@ -57,7 +57,7 @@ public class AboutDialog extends JDialog {
         mainPanel.setLayout(borderLayout4);
         westPanel.setPreferredSize(new Dimension(210, 10));
         westPanel.setLayout(borderLayout3);
-        applicationNameLabel.setFont(new java.awt.Font("Arial", Font.BOLD, 18));
+        applicationNameLabel.setFont(new java.awt.Font("Arial", Font.BOLD, 16));
         applicationNameLabel.setForeground(new Color(30, 0, 150));
         applicationNameLabel.setPreferredSize(new Dimension(23, 25));
         applicationNameLabel.setHorizontalAlignment(SwingConstants.CENTER);

@@ -47,6 +47,8 @@ public class TableDto extends DataDto implements Serializable {
 //        } else {
 //            table.myTeam = TeamColor.BLACK;
 //        }
+        
+        // This is the my team in the perspective of the other player
         table.myTeam = match.getTeam(TeamPosition.TOP).getColor();
 
         table.blackTeam = getDtoTeam(match.getBlackTeam().getPieces());
@@ -56,7 +58,7 @@ public class TableDto extends DataDto implements Serializable {
         return table;
     }
 
-    private static PieceDto[] getDtoTeam(List<Piece> pieces) {
+    public static PieceDto[] getDtoTeam(List<Piece> pieces) {
         List<PieceDto> ps = new ArrayList<PieceDto>();
         for (int i = 0; i < pieces.size(); i++) {
             ps.add(i, PieceDto.toDto(pieces.get(i)));
@@ -81,6 +83,13 @@ public class TableDto extends DataDto implements Serializable {
         return m;
     }
 
+    /**
+     * Create team and also transform its position. 
+     * 
+     * @param ps
+     * @param chessType
+     * @return 
+     */
     private Team createTeam(PieceDto[] ps, ChessType chessType) {
         Team team = new Team();
         List<Piece> pieces = new ArrayList<Piece>();
@@ -91,7 +100,7 @@ public class TableDto extends DataDto implements Serializable {
                     Util.transform(p.pos),
                     createRole(p.currentType, false),
                     createRole(p.actualType, mystery),
-                    p.turnUped);
+                    p.turnedUp);
             pieces.add(p1);
         }
         team.setPieces(pieces);
