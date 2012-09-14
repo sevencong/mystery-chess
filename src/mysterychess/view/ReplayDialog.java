@@ -68,7 +68,7 @@ public class ReplayDialog
     }
 
     private void initiate() throws Exception {
-        setSize(550, 600);
+        setSize(600, 600);
         this.getContentPane().setLayout(borderLayout4);
         replayPanel.setLayout(null);
         jPanel2.setLayout(borderLayout3);
@@ -208,8 +208,6 @@ public class ReplayDialog
             }
             playing = false;
             playButton.setText(">");
-//            changeCurrentState(0);
-            showState(currentStateIndex);
         }
     }
 
@@ -380,7 +378,7 @@ public class ReplayDialog
    protected void drawLostPieces(Graphics g, PieceDto[] pieces, TeamColor color) {
         int u = (int)(unit/1.55f);
         int y = yMargin - (int) unit/2 + 4;
-        int xM = Math.round(xMargin - unit - u/2);
+        int xM = Math.round(xMargin - unit - u*3f/4);
         for (PieceDto piece : pieces) {
             drawLostPiece(g, piece, color, new Point(xM, y), u);
             y += u;
@@ -404,7 +402,7 @@ public class ReplayDialog
       protected void drawCapturedPieces(Graphics g, PieceDto[] pieces, TeamColor color) {
         int u = (int)(unit/1.55f);
         int y = getHeight() - yMargin - (int) unit/2 + u/2 - 4;
-        int xM = Math.round(getWidth() - xMargin + u);
+        int xM = Math.round(getWidth() - xMargin + u * 5f/4);
         for (PieceDto piece : pieces) {
             drawCapturedPiece(g, piece, color, new Point(xM, y), u);
             y -= u;
