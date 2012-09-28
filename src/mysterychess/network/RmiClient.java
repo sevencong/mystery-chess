@@ -76,7 +76,7 @@ public class RmiClient extends AbstractHost implements ClientCallback {
         black.setColor(Team.TeamColor.BLACK);
         white.setColor(Team.TeamColor.WHITE);
         Team activeTeam = data.activeTeam == Team.TeamColor.WHITE ? white : black;
-        match.setData(data.chessType, white, black, activeTeam);
+        match.setData(data.chessType, white, black, activeTeam, data.paused);
     }
 
     private Team createTeam(PieceDto[] ps, ChessType chessType) {
@@ -167,7 +167,7 @@ public class RmiClient extends AbstractHost implements ClientCallback {
             throw re;
         } catch (Exception e) {
             System.out.println("" + e);
-            Logger.getLogger(RmiClient.class.getName()).severe(e.getMessage());
+            Logger.getLogger(RmiClient.class.getName()).log(Level.SEVERE, e.getMessage(), e);
             throw new RemoteException("Fail to connect to server");
         }
     }

@@ -39,6 +39,7 @@ public class TableDto extends DataDto implements Serializable {
     public PieceDto[] whiteTeam = new PieceDto[16];
     public TeamColor myTeam;
     public TeamColor activeTeam;
+    public boolean paused = false;
 
     public static TableDto toDtoTable(Match match) {
         TableDto table = new TableDto();
@@ -55,6 +56,7 @@ public class TableDto extends DataDto implements Serializable {
         table.whiteTeam = getDtoTeam(match.getWhiteTeam().getPieces());
         table.chessType = match.getType();
         table.activeTeam = match.getActiveTeam().getColor();
+        table.paused = match.isPaused();
         return table;
     }
 
@@ -79,7 +81,7 @@ public class TableDto extends DataDto implements Serializable {
         black.setColor(Team.TeamColor.BLACK);
         white.setColor(Team.TeamColor.WHITE);
         Match m = new Match();
-        m.setData(this.chessType, white, black, m.getTeam(this.activeTeam));
+        m.setData(this.chessType, white, black, m.getTeam(this.activeTeam), paused);
         return m;
     }
 

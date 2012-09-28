@@ -32,6 +32,7 @@ public class ChessTable extends JPanel {
     private Piece selectedPiece;
     private Piece latestMovedPiece;
     private float PIECE_OVER_CELL_RATIO = 0.9f;
+//    private boolean paused = false;
 
     public ChessTable(Match match) {
         this.match = match;
@@ -46,6 +47,7 @@ public class ChessTable extends JPanel {
                 if (e.getSource() != null && e.getSource() instanceof Piece) {
                     latestMovedPiece = (Piece) e.getSource();
                 }
+//                paused = match.isPaused();
                 repaint(200);
             }
         });
@@ -117,7 +119,7 @@ public class ChessTable extends JPanel {
     }
 
     protected void mouseDraggedHandler(MouseEvent e) {
-        if (!isEnabled()) {
+        if (!isEnabled() || match.isPaused()) {
             return;
         }
         if (selectedPiece == null) {
@@ -168,6 +170,9 @@ public class ChessTable extends JPanel {
         calculateUnit();
         drawTable(g);
         drawPieces(g);
+        if (match.isPaused()) {
+            drawPausedIcon(g);
+        }
     }
 
     private void calculateUnit() {
@@ -179,6 +184,21 @@ public class ChessTable extends JPanel {
         
         xMargin = (int)(getWidth() - unit*(Util.MAX_X))/2;
         yMargin = (int)(getHeight() - unit * (Util.MAX_Y))/2;
+    }
+    private Point getCenterPoint() {
+        return new Point(getWidth()/2, getHeight()/2);
+    }
+    
+    
+    void drawPausedIcon(Graphics g) {
+        Point p = getCenterPoint();
+        int size = (int)(unit * 1.5);
+        g.drawImage(Util.getPausedImage(),
+                    p.x - size / 2,
+                    p.y - size / 2,
+                    size,//piece.getImage().getWidth(null),
+                    size,//piece.getImage().getHeight(null),
+                    null);
     }
 
     private void drawTable(Graphics g) {
@@ -346,5 +366,9 @@ public class ChessTable extends JPanel {
 
     public Point toChessTableCoordinate(Point p) {
         return new Point(Math.round((p.x - xMargin) / unit), Math.round((p.y - yMargin) / unit));
+    }
+    
+    synchronized void pauseStateChanged() {
+        repaint();
     }
 }

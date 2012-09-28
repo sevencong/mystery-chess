@@ -110,7 +110,7 @@ public class RmiServer extends AbstractHost //extends java.rmi.server.UnicastRem
     protected void createNewGame(ChessType type, TeamColor bottomTeam) {
         try {
             Match m = new Match(type, bottomTeam);
-            match.setData(type, m.getWhiteTeam(), m.getBlackTeam(), m.getWhiteTeam());
+            match.setData(type, m.getWhiteTeam(), m.getBlackTeam(), m.getWhiteTeam(), false);
             if (client != null) { 
                 client.setTable(TableDto.toDtoTable(match));
             }
@@ -154,7 +154,7 @@ public class RmiServer extends AbstractHost //extends java.rmi.server.UnicastRem
         try {
             Match m = tableDto.toMatch();
             match.setData(m.getType(), m.getWhiteTeam(),
-                    m.getBlackTeam(), m.getActiveTeam());
+                    m.getBlackTeam(), m.getActiveTeam(), tableDto.paused);
             match.setActiveTeam(match.getTeam(tableDto.activeTeam));
 
             // Revert the team for client

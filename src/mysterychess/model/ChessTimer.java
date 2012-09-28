@@ -12,6 +12,8 @@ public class ChessTimer {
     private long pieceMoveExpiredTime;
     private boolean gameStarted = false;
     private boolean running = false;
+    private boolean paused;
+    private long pauseTime;
 
     public void startGame() {
         gameStarted = true;
@@ -21,6 +23,7 @@ public class ChessTimer {
         gameStarted = false;
         running = false;
         gameSpentTime = 0;
+        paused = false;
     }
 
     public boolean isRunning() {
@@ -44,6 +47,23 @@ public class ChessTimer {
         running = false;
     }
 
+    public synchronized void pause() {
+        if (!running) {
+            return;
+        }
+        paused = true;
+        pauseTime = System.currentTimeMillis();
+    }
+    
+    public synchronized void unpause() {
+        if (!running) {
+            return;
+        }
+        long pausePeriod = System.currentTimeMillis() - pauseTime;
+        pieceMoveExpiredTime += pausePeriod; 
+        paused = false;
+    }
+    
     private String formatTime(long t) {
         long second = t / 1000;
         long minutes = second / 60;
@@ -60,7 +80,11 @@ public class ChessTimer {
 
     public long getPieceMoveTimeLeft() {
         if (running) {
-            return pieceMoveExpiredTime - System.currentTimeMillis();
+            long pausePeriod = 0;
+            if (paused) {
+                pausePeriod = System.currentTimeMillis() - pauseTime;
+            }
+            return pieceMoveExpiredTime - System.currentTimeMillis() + pausePeriod;
         }
 
         return Util.PIECE_MOVE_EXPIRE_TIME;

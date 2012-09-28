@@ -46,7 +46,7 @@ import mysterychess.network.dto.PieceDto;
  */
 public class Util {
 
-    private final static String VERSION = "3.0-beta";
+    private final static String VERSION = "3.0";  
     public final static String APPLICATION_NAME = "MysteryChess";
     public final static String RMI_SERVER_NAME = "MysteryChessServer";
     public final static String DEFAULT_BASE_DIRECTORY = System.getProperty("user.dir");
@@ -113,6 +113,7 @@ public class Util {
             }
             loadImage(c + "unknown" + ".png");
         }
+        loadImage("paused.png");
     }
 
     public static Collection<Image> getAllImages() {
@@ -158,6 +159,9 @@ public class Util {
         return loadImage("about.png");
     }
     
+    public static Image getPausedImage() {
+        return loadImage("paused.png");
+    }
     public static Image getIconImage() {
         return loadImage("icon.png");
     }
@@ -220,7 +224,7 @@ public class Util {
         boolean randomSufferFirst = (System.nanoTime() % 2 == 0);
         List<T> l = new ArrayList<T>(list);
         if (randomSufferFirst) {
-            Collections.shuffle(l, new Random(System.nanoTime() % 10000));
+            Collections.shuffle(l, new Random(System.nanoTime() % 111123111));
         }
 
         List<T> result = new ArrayList<T>();

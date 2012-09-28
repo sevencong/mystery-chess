@@ -169,7 +169,7 @@ public class StartupFrame extends JFrame {
         addressLabel.setText("Server address:");
         addressLabel.setVisible(false);
         addressCombo.setVisible(false);
-        String str = loader.getParameter("server", "192.168.103.191");
+        String str = loader.getParameter("server", "localhost");
         String[] addrs = str.split(";");
         for (String a : addrs) {
             addressCombo.addItem(a);

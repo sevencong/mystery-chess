@@ -44,14 +44,13 @@ public class GameTracker {
 
     public void addState(MatchState state) {
         states.add(state);
-        saveGame();
     }
     
     private static final String DEFAULT_BASE_DIRECTORY = System.getProperty("user.dir");
 
-    private void saveGame() {
+    public void save(String fileName) {
         try {
-            File f = new File(DEFAULT_BASE_DIRECTORY, name);
+            File f = new File(fileName);
             if (f.exists()) {
                 f.delete();
             }

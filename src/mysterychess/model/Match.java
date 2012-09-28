@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import mysterychess.model.Team.TeamPosition;
 import mysterychess.network.dto.TableDto;
 import mysterychess.view.ChessTable;
@@ -49,6 +50,7 @@ public class Match {
     private List<ActionListener> gameLoadedListeners = new CopyOnWriteArrayList<ActionListener>();
     private List<ActionListener> gameSavedListeners = new CopyOnWriteArrayList<ActionListener>();
     private GameTracker gameTracker = new GameTracker();    
+    private GameTracker previousGameTracker;
     public ChessType getType() {
         return type;
     }
@@ -96,7 +98,16 @@ public class Match {
         dataChanged(null);
     }
 
-    public void setData(ChessType type, Team whiteTeam, Team blackTeam, Team activeTeam) {
+    /**
+     * This method will be called when a new game created.
+     * 
+     * @param type game type.
+     * @param whiteTeam 
+     * @param blackTeam
+     * @param activeTeam 
+     */
+    public void setData(ChessType type, Team whiteTeam, Team blackTeam, Team activeTeam, boolean paused) {
+        backupCurrentTracker();
         this.type = type;
         this.whiteTeam = whiteTeam;
         this.blackTeam = blackTeam;
@@ -104,8 +115,10 @@ public class Match {
         blackTeam.setMatch(this);
         this.activeTeam = activeTeam;
         checkPiece = null;
+//        this.paused = paused;
         setEnabled(false);
         dataChanged(null);
+        setPauseStatus(paused, false);
     }
 
     public Team getTeam(TeamPosition position) {
@@ -526,17 +539,27 @@ public class Match {
         }
     }
 
-    public void saveGame(String fileName) {
-        try {
-            FileOutputStream f = new FileOutputStream(fileName);
-            ObjectOutputStream os = new ObjectOutputStream(f);
-            os.writeObject(TableDto.toDtoTable(this));
-            os.flush();
-            os.close();
-        } catch (Exception e) {
-            Logger.getLogger(Match.class.getName()).severe("Fail to save file");
+    public void saveGame(String fileName, boolean previousGame) {
+        if (previousGame) {
+            if (previousGameTracker != null) {
+                previousGameTracker.save(fileName);
+                previousGameTracker = null;
+            }
+        } else {
+            gameTracker.save(fileName);
         }
     }
+//    public void saveGame(String fileName) {
+//        try {
+//            FileOutputStream f = new FileOutputStream(fileName);
+//            ObjectOutputStream os = new ObjectOutputStream(f);
+//            os.writeObject(TableDto.toDtoTable(this));
+//            os.flush();
+//            os.close();
+//        } catch (Exception e) {
+//            Logger.getLogger(Match.class.getName()).severe("Fail to save file");
+//        }
+//    }
 
     public Team getTeam(TeamColor teamColor) {
         if (blackTeam.getColor() == teamColor) {
@@ -550,4 +573,54 @@ public class Match {
             l.errorReceived(msg);
         }
     }
+
+    private void backupCurrentTracker() {
+        if (gameTracker.getStates().size() > 0) {
+            previousGameTracker = gameTracker;
+        } else {
+            previousGameTracker = null;
+        }
+    }
+    
+    public boolean isGameNeedSave(boolean previousGame) {
+        if (previousGame) {
+        return (previousGameTracker != null 
+                && previousGameTracker.getStates().size() > 0);
+        } else {
+            return gameTracker != null && gameTracker.getStates().size() > 0;
+        }
+    }
+
+    private boolean paused = false;
+    public boolean isPaused() {
+        return paused;
+    }
+    
+//    public boolean togglePauseStatus(boolean requestFromView) {
+//        return setPauseStatus(!paused, requestFromView);
+//    }
+    
+    public boolean setPauseStatus(boolean newState, boolean requestFromView) {
+        paused = newState;
+        if (requestFromView) {
+            for (ModelActionListener l : modelActionListeners) {
+                if (paused) {
+                    l.pause();
+                } else {
+                    l.unpause();
+                }
+            }
+        } else {
+            for (RemoteActionListener l : remoteActionListeners) {
+                if (paused) {
+                    l.pause();
+                } else {
+                    l.unpause();
+                }
+            }
+        }
+        
+        return paused;
+    }
+    
 }

@@ -21,4 +21,8 @@ public interface CommonRemote extends Remote {
     public void resigned() throws RemoteException;
 
     public void gameOver(String msg) throws RemoteException;
+
+    public void pause() throws RemoteException;
+
+    public void unpause() throws RemoteException;
 }

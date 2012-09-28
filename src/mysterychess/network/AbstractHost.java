@@ -128,7 +128,9 @@ public abstract class AbstractHost implements CommonRemote {
 
             public void resigned() {
                 try {
-                    getOtherSide().resigned();
+                    if (getOtherSide() != null) {
+                        getOtherSide().resigned();
+                    }
                 } catch (RemoteException ex) {
                     Logger.getLogger(AbstractHost.class.getName()).log(Level.SEVERE,
                             ex.getMessage(), ex);
@@ -142,6 +144,30 @@ public abstract class AbstractHost implements CommonRemote {
                     Logger.getLogger(AbstractHost.class.getName()).log(Level.SEVERE,
                             ex.getMessage(), ex);
                     AbstractHost.this.match.receivedError(ex.getCause().getMessage());
+                }
+            }
+
+            @Override
+            public void pause() {
+                try {
+                    if (getOtherSide() != null) {
+                        getOtherSide().pause();
+                    }
+                 } catch (RemoteException ex) {
+                    Logger.getLogger(AbstractHost.class.getName()).log(Level.SEVERE,
+                            ex.getMessage(), ex);
+                }
+            }
+
+            @Override
+            public void unpause() {
+                try {
+                    if (getOtherSide() != null) {
+                        getOtherSide().unpause();
+                    }
+                } catch (RemoteException ex) {
+                    Logger.getLogger(AbstractHost.class.getName()).log(Level.SEVERE,
+                            ex.getMessage(), ex);
                 }
             }
         });
@@ -245,5 +271,13 @@ public abstract class AbstractHost implements CommonRemote {
      */
     public void gameOver(String msg) throws RemoteException {
         match.gameOver(msg, false);
+    }
+    
+    public void pause() throws RemoteException {
+        match.setPauseStatus(true, false);
+    }
+        
+    public void unpause() throws RemoteException {
+        match.setPauseStatus(false, false);
     }
 }

@@ -145,7 +145,7 @@ public class ReplayDialog
     private void play() {
         playButton.setText("||");
         playing = true;
-        if (currentStateIndex == states.size()) {
+        if (currentStateIndex >= states.size() - 1) {
             changeCurrentState(0);
         }
         player = new PlayThread();

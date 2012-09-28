@@ -1,16 +1,10 @@
 Remain bugs and Feature list:
-- Has a signal indicates that which team is in turn
-- Send detect message each period of time (say 30'')
-- Remove moving piece by drag  & drop
 - Only allow move when 2 players are ready
-- Test checkmate
 - Redesign using MVC and improve Listener mechanism
-- Ensure the application stopped in all error cases
 - Support undo
 - Have a good exception handling system --> show proper message
 -- Refactor listener --> support message, error...
 - Load/save
-- Record, replay
 - Refactor move/dataChanged Listeners
 - Localization
 - [bug] in rare case, the allowed time is expired but the program cannot detect that which result in unlimited time game. 

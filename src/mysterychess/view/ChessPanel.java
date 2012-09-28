@@ -29,6 +29,7 @@ import mysterychess.model.Match;
 import mysterychess.model.Piece;
 import mysterychess.model.RemoteActionListener;
 import mysterychess.model.Team;
+import mysterychess.util.Task;
 import mysterychess.util.Util;
 
 /**
@@ -44,12 +45,21 @@ public class ChessPanel extends JPanel {
     private JPanel lostPanel;
     private JPanel capturedPanel;
     private JPanel northPanel;
-    private JPanel southPanel;
     private JDialog aboutFrame;
+    private ChessTable chessTable;
+    private JButton pauseButton;
+    private TimerPanel southTimerPanel;
+    private TimerPanel northTimerPanel;
 
     public ChessPanel(Match m) {
         this.match = m;
         initComponents();
+        if (match.isPaused()) {
+            setEnabled(false);
+//          chessTable.setEnabled(false);
+            pauseButton.setText("Unpause");
+            chessTable.pauseStateChanged();
+        }
         match.addRemoteActionListeners(new RemoteActionListener() {
 
             public void errorReceived(String message) {
@@ -65,13 +75,32 @@ public class ChessPanel extends JPanel {
                 Util.showMessageConcurrently(ChessPanel.this,
                         "Guest has stopped playing");
             }
+
+            @Override
+            public void pause() {
+                setEnabled(false);
+//                chessTable.setEnabled(false);
+                pauseButton.setText("Unpause");
+                chessTable.pauseStateChanged();
+            }
+
+            @Override
+            public void unpause() {
+                if (match.isEnabled()) {
+                    setEnabled(match.isEnabled());
+                    chessTable.setEnabled(match.isEnabled());
+                }
+                pauseButton.setText("Pause");
+                chessTable.pauseStateChanged();
+            }
         });
     }
 
     @SuppressWarnings("unchecked")
     private void initComponents() {
         setLayout(new BorderLayout());
-        add(new ChessTable(match), java.awt.BorderLayout.CENTER);
+        chessTable = new ChessTable(match);
+        add(chessTable, java.awt.BorderLayout.CENTER);
 
         lostPanel = new LostPiecesPanel(match);
         lostPanel.setSize(new Dimension(VERTICAL_PANEL_WIDTH, 100));
@@ -83,15 +112,15 @@ public class ChessPanel extends JPanel {
         add(lostPanel, java.awt.BorderLayout.WEST);
         add(capturedPanel, java.awt.BorderLayout.EAST);
         add(northPanel, java.awt.BorderLayout.NORTH);
-        add(southPanel, java.awt.BorderLayout.SOUTH);
+        add(southTimerPanel, java.awt.BorderLayout.SOUTH);
 
         setPreferredSize(new Dimension(600, 600));
     }
 
     private void createSouthPanel() {
-        southPanel = new TimerPanel(match, match.getTeam(Team.TeamPosition.BOTTOM));
-        southPanel.setSize(new Dimension(100, HORIZONTAL_PANEL_HEIGHT));
-        new Thread((Runnable) southPanel).start();
+        southTimerPanel = new TimerPanel(match, match.getTeam(Team.TeamPosition.BOTTOM));
+        southTimerPanel.setSize(new Dimension(100, HORIZONTAL_PANEL_HEIGHT));
+        new Thread((Runnable) southTimerPanel).start();
     }
 
     private void createNorthPanel() {
@@ -99,18 +128,23 @@ public class ChessPanel extends JPanel {
         northPanel.setSize(new Dimension(100, HORIZONTAL_PANEL_HEIGHT));
         northPanel.setLayout(new BorderLayout());
 
+        // Timer
+        northTimerPanel = new TimerPanel(match, match.getTeam(Team.TeamPosition.TOP));
+
         // Button
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
         JButton newGameButton = new JButton("New");
 //        JButton saveButton = new JButton("Save");
         JButton replayButton = new JButton("Playback");
+        pauseButton = new JButton("Pause");
         JButton aboutButton = new JButton("About");
 //        saveButton.setEnabled(false);
 //        replayButton.setEnabled(true);
         buttonPanel.add(newGameButton);
 //        buttonPanel.add(saveButton);
         buttonPanel.add(replayButton);
+        buttonPanel.add(pauseButton);
         buttonPanel.add(aboutButton);
         buttonPanel.setSize(150, HORIZONTAL_PANEL_HEIGHT);
         newGameButton.addActionListener(new ActionListener() {
@@ -137,6 +171,28 @@ public class ChessPanel extends JPanel {
 //            }
 //        });
 
+        pauseButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                boolean paused = match.setPauseStatus(!match.isPaused(), true);
+                if (paused) {
+                    pauseButton.setText("Unpause");
+                    northTimerPanel.pause();
+                    southTimerPanel.pause();
+                    chessTable.pauseStateChanged();
+                } else {
+                    pauseButton.setText("Pause");
+                    northTimerPanel.unpause();
+                    southTimerPanel.unpause();
+                    chessTable.pauseStateChanged();
+                }
+                
+                setEnabled(!paused && match.isEnabled());
+                //chessTable.setEnabled(!paused && match.isEnabled());
+            }
+
+        });
+        
         replayButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -151,22 +207,58 @@ public class ChessPanel extends JPanel {
             }
         });
 
-        // Timer
-        TimerPanel timerPanel = new TimerPanel(match, match.getTeam(Team.TeamPosition.TOP));
         northPanel.add(buttonPanel, BorderLayout.WEST);
-        northPanel.add(timerPanel, BorderLayout.CENTER);
-        new Thread(timerPanel).start();
+        northPanel.add(northTimerPanel, BorderLayout.CENTER);
+        new Thread(northTimerPanel).start();
+    }
+    
+    boolean savingGame = false;
+    /**
+     * Saves the previous or the current game.
+     * 
+     * @param previousGame if true, the previous game will be saved; 
+     *                     otherwise the current game will be save
+     */
+    private synchronized void save(final boolean previousGame) {
+        if (savingGame) {
+            return;
+        }
+//        String fileName = selectFile(false);
+//        match.saveGame(fileName);
+        savingGame = true;
+        Util.execute(new Task() {
+            @Override
+            public void perform() throws Exception {
+                saveGame(previousGame);
+                savingGame = false;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Ask user to save game task";
+            }
+        });
+
     }
 
-    private void saveGame() {
-        String fileName = selectFile(false);
-        match.saveGame(fileName);
+    public void saveGame(boolean previousGame) {
+        if (match.isGameNeedSave(previousGame)) {
+            String msg = previousGame ? "Do you want to save the previous game?"
+                    : "Do you want to save the current game?";
+            int answer = JOptionPane.showConfirmDialog(ChessPanel.this, msg, "Comfirmation", JOptionPane.YES_NO_OPTION);
+            if (answer == JOptionPane.YES_OPTION) {
+                String fileName = selectFile(false);
+                if (fileName != null) {
+                    match.saveGame(fileName, previousGame);
+                }
+            }
+        }
     }
 
-    private void loadGame() {
-        String fileName = selectFile(true);
-        match.loadGame(fileName);
-    }
+//    private void loadGame() {
+//        String fileName = selectFile(true);
+//        match.loadGame(fileName);
+//    }
     
     private void replayGame() {
         
@@ -298,6 +390,9 @@ public class ChessPanel extends JPanel {
                                 gameStopped = false;
                                 pieceMoveTimeWarned = false;
                                 setGameTimeWarn(false);
+                                
+                                // Ask user to save the previous game
+                                save(true);
                             }
                         }
                     }
@@ -325,6 +420,18 @@ public class ChessPanel extends JPanel {
                 public void shutdownRequested() {
                     gameStopped = true;
                     pieceMoveTimeWarned = false;
+                }
+
+                @Override
+                public void pause() {
+                    TimerPanel.this.pause();
+                    chessTable.pauseStateChanged();
+                }
+
+                @Override
+                public void unpause() {
+                    TimerPanel.this.unpause();
+                    chessTable.pauseStateChanged();
                 }
             });
         }
@@ -388,6 +495,14 @@ public class ChessPanel extends JPanel {
                     Logger.getLogger(ChessPanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+        }
+
+        synchronized void pause() {
+            timer.pause();
+        }
+        
+        synchronized void unpause() {
+            timer.unpause();
         }
     }
 }

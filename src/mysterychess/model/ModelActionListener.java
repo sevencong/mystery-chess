@@ -4,7 +4,7 @@ import java.awt.Point;
 import mysterychess.network.dto.TableDto;
 
 /**
- * 
+ * The listener which listens to the actions in model.
  *
  * @author Tin Bui-Huy
  */
@@ -25,4 +25,9 @@ public interface ModelActionListener {
     public void resigned();
 
     public void gameOver(String msg);
+    
+    public void pause();
+    
+    public void unpause();
+    
 }

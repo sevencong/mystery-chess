@@ -59,6 +59,7 @@ public class MainFrame extends javax.swing.JFrame {
     @Override
     protected void processWindowEvent(WindowEvent e) {
         if (e.getID() == WindowEvent.WINDOW_CLOSING) {
+            chessPanel.saveGame(false);
             super.processWindowEvent(e);
             match.shutdown(true);
             try {
