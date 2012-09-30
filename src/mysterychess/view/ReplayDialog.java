@@ -388,7 +388,8 @@ public class ReplayDialog
      private void drawLostPiece(Graphics g, PieceDto piece, TeamColor color, Point p, int unit) {
         try {
             int imageSize = unit;
-            g.drawImage(Util.getRetiredImage(piece, false, color),
+//            g.drawImage(Util.getRetiredImage(piece, false, color),
+            g.drawImage(Util.getRetiredImage(piece, true, color),
                     p.x,
                     p.y,
                     imageSize,
